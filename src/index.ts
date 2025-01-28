@@ -5,7 +5,6 @@ import { AppDataSource } from "./data-source";
 import userRouter from "./routes/user.routes";
 import issueRouter from "./routes/issue.routes";
 import cors from "cors";
-import bodyParser from "body-parser"
 
 configDotenv();
 
@@ -18,8 +17,6 @@ AppDataSource.initialize()
     // Middlewares
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
-
-    // app.use(bodyParser.urlencoded({ extended: false }))
 
     app.use(userRouter);
     app.use(issueRouter);
@@ -37,5 +34,6 @@ AppDataSource.initialize()
 
 
 
-  // User, rewards and Issue names
+  // To be able to sort using Query
   // Api for getting all the issues alone
+  // Delete Issues

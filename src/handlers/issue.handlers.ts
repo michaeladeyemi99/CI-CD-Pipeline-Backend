@@ -150,4 +150,55 @@ async function postAnIssue(request: Request, response: Response) {
   }
 }
 
-export { updateUserRewards, postAnIssue };
+async function getIssues(request: Request, response: Response) {
+  try {
+    const page = parseInt(request.query.page as string) || 1;
+    const limit = parseInt(request.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    const orderColumn = (request.query.order as string) || "id";
+
+    const validColumns = ["id", "issue_category", "createdAt", "updatedAt"]; // Add valid columns here
+    if (!validColumns.includes(orderColumn)) {
+      response.status(400).json({
+        success: false,
+        message: `Invalid order column: ${orderColumn}. Allowed columns: ${validColumns.join(
+          ", "
+        )}`,
+      });
+      return;
+    }
+
+    const issueRepository = AppDataSource.getRepository(Issue);
+    const [allIssues, totalIssues] = await issueRepository.findAndCount({
+      relations: {
+        user: true,
+        image_file_paths: true,
+      },
+      order: { [orderColumn]: "DESC" },
+      take: limit,
+      skip: skip,
+    });
+
+    const totalPages = Math.ceil(totalIssues / limit);
+    const prevPage = page > 1 ? page - 1 : null;
+    const nextPage = page < totalPages ? page + 1 : null;
+
+    response.status(200).json({
+      success: true,
+      message: "All Issues Successfully pulled",
+      issues: allIssues,
+      totalIssues,
+      currentPage: page,
+      prevPage,
+      nextPage,
+    });
+  } catch (error: any) {
+    response.status(500).json({
+      success: false,
+      message: "Could not get all the Issues",
+      error: error.message,
+    });
+  }
+}
+
+export { updateUserRewards, postAnIssue, getIssues };
